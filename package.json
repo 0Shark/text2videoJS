@@ -1,0 +1,17 @@
+{
+	"name": "text2video",
+	"version": "1.0.0",
+	"description": "",
+	"main": "main.js",
+	"author": "Juled Zaganjori (0Shark)",
+	"license": "ISC",
+	"dependencies": {
+		"dotenv": "^16.0.3",
+		"express": "^4.17.3",
+		"mathjs": "^11.8.2",
+		"microsoft-cognitiveservices-speech-sdk": "^1.31.0",
+		"openai": "^3.2.1",
+		"socket.io": "^4.4.1"
+	},
+	"type": "module"
+}
