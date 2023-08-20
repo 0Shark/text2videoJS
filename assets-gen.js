@@ -17,6 +17,13 @@ console.log(__dirname);
 
 // Prepare directory for assets inside videos folder add a folder with the user_id
 function prepareAssetsDir(user_id) {
+	// Create videos folder if it doesn't exist
+	const videosDir = path.join(__dirname, "videos");
+
+	if (!fs.existsSync(videosDir)) {
+		fs.mkdirSync(videosDir);
+	}
+
 	const assetsDir = path.join(__dirname, "videos", user_id);
 
 	if (!fs.existsSync(assetsDir)) {
@@ -131,9 +138,221 @@ async function getAudioTTS(user_id, assetsDir) {
 	}
 }
 
-// Image and Video Generator
-async function getImagesAndVideos(user_id, assetsDir, resolution=
+/*
+# Photo and video assets
+def get_stock_images(video_id, part_number, part_tags, image_count, orientation, asset_size):
+    api_key = os.getenv("PEXELS_API_KEY")
+    # Perform search with the tags joined by a + sign
+    response = requests.get("https://api.pexels.com/v1/search?query=" + "+".join(part_tags) + "&per_page=" +
+                            str(image_count) + "&orientation=" +
+                            orientation + "&size=" + str(asset_size),
+                            headers={"Authorization": api_key})
+    # Get images
+    images = response.json()["photos"]
+    # Get image URLs
+    image_urls = [image["src"]["original"] for image in images]
+    # Download images
+    for i in range(0, len(image_urls)):
+        # Get image
+        image = requests.get(image_urls[i])
+        # Save image
+        with open("videos/" + video_id + "/p" + str(part_number) + "/img/" + str(i) + ".jpg", "wb") as f:
+            f.write(image.content)
 
+
+def get_stock_videos(video_id, part_number, part_tags, video_count, orientation, asset_size):
+
+    api_key = os.getenv("PEXELS_API_KEY")
+
+    response = requests.get("https://api.pexels.com/videos/search?query=" + "+".join(
+        part_tags) + "&orientation=" + orientation + "&size=" + str(asset_size) + "&per_page=" + str(video_count),
+        headers={"Authorization": api_key})
+    # Get videos
+    videos = response.json()["videos"]
+
+    # Get video URLs
+    video_urls = [video["video_files"][0]["link"] for video in videos]
+
+    # Download videos
+    for i in range(0, video_count):
+        # Get video
+        video = requests.get(video_urls[i])
+        # Save video
+        with open("videos/" + video_id + "/p" + str(part_number) + "/video/" + str(i) + ".mp4", "wb") as f:
+            f.write(video.content)
+*/
+
+// Image and Video Generator
+async function getImagesAndVideos(user_id, assetsDir, width=1280, height=720) {
+	const script_path = path.join(assetsDir, "/script.json");
+
+	// Get 1 short video and 1 image for each subtitle based on the search_tags
+	try {
+		const script = JSON.parse(fs.readFileSync(script_path));
+
+		// Create images and videos subfolders
+		const imagesDir = path.join(assetsDir, "/images");
+		const videosDir = path.join(assetsDir, "/videos");
+
+		if (!fs.existsSync(imagesDir)) {
+			fs.mkdirSync(imagesDir);
+		}
+
+		if (!fs.existsSync(videosDir)) {
+			fs.mkdirSync(videosDir);
+		}
+
+		// Get images and videos for each subtitle
+		for (let i = 0; i < script.subtitles.length; i++) {
+			const subtitle = script.subtitles[i];
+
+			// Create subtitle folder
+			const subtitleDir = path.join(imagesDir, `/subtitle_${i}`);
+
+			if (!fs.existsSync(subtitleDir)) {
+				fs.mkdirSync(subtitleDir);
+			}
+
+			// Get images
+			const imageTags = subtitle.search_tags;
+			const imageCount = 2;
+			const imageOrientation = "landscape";
+			const imageSize = "medium";
+
+			const images = await getStockImages(imageTags, imageCount, imageOrientation, imageSize).then((images) => {
+				return images;
+			});
+
+			// Get videos
+			const videoTags = subtitle.search_tags;
+			const videoCount = 1;
+			const videoOrientation = "landscape";
+			const videoSize = "medium";
+
+			const videos = await getStockVideos(videoTags, videoCount, videoOrientation, videoSize).then((videos) => {
+				return videos;
+			});
+
+			// Download images
+			for (let i = 0; i < images.length; i++) {
+				// Get image
+				const image = await getImage(images[i]).then((image) => {
+					return image;
+				});
+
+				// Save image
+				const imagePath = path.join(subtitleDir, `/image_${i}.jpg`);
+				fs.writeFileSync(imagePath, image);
+			}
+
+			// Download videos
+			for (let i = 0; i < videos.length; i++) {
+				// Get video
+				const video = await getVideo(videos[i]).then((video) => {
+					return video;
+				});
+
+				// Save video
+				const videoPath = path.join(subtitleDir, `/video_${i}.mp4`);
+				fs.writeFileSync(videoPath, video);
+			}
+		}
+	} catch (error) {
+		console.log(`[ERROR] Couldn't generate images and videos for user ${user_id}`);
+		console.log(error);
+
+		return false;
+	}
+}
+
+// Get images from Pexels
+async function getStockImages(tags, count, orientation, size) {
+	const api_key = process.env.PEXELS_API_KEY;
+
+	// Perform search with the tags joined by a + sign
+	const response = await fetch(
+		"https://api.pexels.com/v1/search?query=" +
+			"+".join(tags) +
+			"&per_page=" +
+			str(count) +
+			"&orientation=" +
+			orientation +
+			"&size=" +
+			str(size),
+		{
+			headers: {
+				Authorization: api_key,
+			},
+		}
+	).then((response) => {
+		return response.json();
+	});
+
+	// Get images
+	const images = response.photos;
+
+	// Get image URLs
+	const image_urls = [];
+
+	for (const image of images) {
+		image_urls.push(image.src.original);
+	}
+
+	return image_urls;
+}
+
+// Get videos from Pexels
+async function getStockVideos(tags, count, orientation, size) {
+	const api_key = process.env.PEXELS_API_KEY;
+
+	// Perform search with the tags joined by a + sign
+	const response = await fetch(
+		"https://api.pexels.com/videos/search?query=" +
+			"+".join(tags) +
+			"&orientation=" +
+			orientation +
+			"&size=" +
+			str(size) +
+			"&per_page=" +
+			str(count),
+		{
+			headers: {
+				Authorization: api_key,
+			},
+		}
+	).then((response) => {
+		return response.json();
+	});
+
+	// Get videos
+	const videos = response.videos;
+
+	// Get video URLs
+	const video_urls = [];
+
+	for (const video of videos) {
+		video_urls.push(video.video_files[0].link);
+	}
+
+	return video_urls;
+}
+
+// Get image from URL
+async function getImage(url) {
+	const image = await fetch(url).then((response) => {
+		return response.blob();
+	});
+
+	return image;
+}
+
+// Get video from URL
+async function getVideo(url) {
+	const video = await fetch(url).then((response) => {
+		return response.blob();
+	});
+
+	return video;
 }
 
 export async function AssetsGen(topic, user_id) {
@@ -147,7 +366,10 @@ export async function AssetsGen(topic, user_id) {
 			.then(() => {
 				console.log("Generating audio for user " + user_id);
 				const audioStatus = getAudioTTS(user_id, assetsDir).then((status) => {
-					return status;
+					console.log("Generating images and videos for user " + user_id);
+					const imagesAndVideosStatus = getImagesAndVideos(user_id, assetsDir).then((status) => {
+						return status;
+					});
 				});
 			})
 			.catch((error) => {
