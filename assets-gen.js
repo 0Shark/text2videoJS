@@ -7,8 +7,6 @@ import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
 dotenv.config();
 
-
-
 // OpenAI API
 const configuration = new Configuration({
 	apiKey: process.env.OPENAI_API_KEY,
@@ -141,136 +139,77 @@ async function getAudioTTS(user_id, assetsDir) {
 	}
 }
 
-/*
-# Photo and video assets
-def get_stock_images(video_id, part_number, part_tags, image_count, orientation, asset_size):
-    api_key = os.getenv("PEXELS_API_KEY")
-    # Perform search with the tags joined by a + sign
-    response = requests.get("https://api.pexels.com/v1/search?query=" + "+".join(part_tags) + "&per_page=" +
-                            str(image_count) + "&orientation=" +
-                            orientation + "&size=" + str(asset_size),
-                            headers={"Authorization": api_key})
-    # Get images
-    images = response.json()["photos"]
-    # Get image URLs
-    image_urls = [image["src"]["original"] for image in images]
-    # Download images
-    for i in range(0, len(image_urls)):
-        # Get image
-        image = requests.get(image_urls[i])
-        # Save image
-        with open("videos/" + video_id + "/p" + str(part_number) + "/img/" + str(i) + ".jpg", "wb") as f:
-            f.write(image.content)
-
-
-def get_stock_videos(video_id, part_number, part_tags, video_count, orientation, asset_size):
-
-    api_key = os.getenv("PEXELS_API_KEY")
-
-    response = requests.get("https://api.pexels.com/videos/search?query=" + "+".join(
-        part_tags) + "&orientation=" + orientation + "&size=" + str(asset_size) + "&per_page=" + str(video_count),
-        headers={"Authorization": api_key})
-    # Get videos
-    videos = response.json()["videos"]
-
-    # Get video URLs
-    video_urls = [video["video_files"][0]["link"] for video in videos]
-
-    # Download videos
-    for i in range(0, video_count):
-        # Get video
-        video = requests.get(video_urls[i])
-        # Save video
-        with open("videos/" + video_id + "/p" + str(part_number) + "/video/" + str(i) + ".mp4", "wb") as f:
-            f.write(video.content)
-*/
-
 // Image and Video Generator
-async function getImagesAndVideos(user_id, assetsDir, width=1280, height=720) {
-	const script_path = path.join(assetsDir, "/script.json");
-
-	console.log("Generating images and videos: User: " + user_id);
-
-	// Get 1 short video and 1 image for each subtitle based on the search_tags
+async function getImagesAndVideos(user_id, assetsDir) {
 	try {
+		const script_path = path.join(assetsDir, "/script.json");
 		const script = JSON.parse(fs.readFileSync(script_path));
 
-		// Create images and videos subfolders
-		const imagesDir = path.join(assetsDir, "/images");
-		const videosDir = path.join(assetsDir, "/videos");
+		const subtitleAssetsDir = path.join(assetsDir, "/assets");
 
-		if (!fs.existsSync(imagesDir)) {
-			fs.mkdirSync(imagesDir);
+		if (!fs.existsSync(subtitleAssetsDir)) {
+			fs.mkdirSync(subtitleAssetsDir);
 		}
 
-		if (!fs.existsSync(videosDir)) {
-			fs.mkdirSync(videosDir);
-		}
-
-		// Get images and videos for each subtitle
 		for (let i = 0; i < script.subtitles.length; i++) {
 			const subtitle = script.subtitles[i];
-
-			// Create subtitle folder
-			const subtitleDir = path.join(imagesDir, `/subtitle_${i}`);
+			const subtitleDir = path.join(subtitleAssetsDir, `/subtitle_${i}`);
 
 			if (!fs.existsSync(subtitleDir)) {
 				fs.mkdirSync(subtitleDir);
 			}
 
-			// Get images
 			const imageTags = subtitle.search_tags;
 			const imageCount = 2;
 			const imageOrientation = "landscape";
 			const imageSize = "medium";
 
-			const images = await getStockImages(imageTags, imageCount, imageOrientation, imageSize).then((images) => {
-				return images;
-			});
+			const images = await getStockImages(imageTags, imageCount, imageOrientation, imageSize);
 
-			// Get videos
 			const videoTags = subtitle.search_tags;
 			const videoCount = 1;
 			const videoOrientation = "landscape";
 			const videoSize = "medium";
 
-			const videos = await getStockVideos(videoTags, videoCount, videoOrientation, videoSize).then((videos) => {
-				return videos;
-			});
+			const videos = await getStockVideos(videoTags, videoCount, videoOrientation, videoSize);
 
-			// Download images
 			for (let i = 0; i < images.length; i++) {
-				// Get image
-				const image = await getImage(images[i], i).then((image) => {
-					return image;
-				});
-
-				// Save image
-				const imagePath = path.join(subtitleDir, `/image_${i}.jpg`);
-
-				// save blob to file
-
-				fs.writeFileSync(imagePath, image);
+				await getImage(images[i], i, subtitleDir);
 			}
 
-			// Download videos
 			for (let i = 0; i < videos.length; i++) {
-				// Get video
-				const video = await getVideo(videos[i], i).then((video) => {
-					return video;
-				});
-
-				// Save video
-				const videoPath = path.join(subtitleDir, `/video_${i}.mp4`);
-				fs.writeFileSync(videoPath, video);
+				await getVideo(videos[i], i, subtitleDir);
 			}
 		}
+
+		return true;
 	} catch (error) {
 		console.log(`[ERROR] Couldn't generate images and videos for user ${user_id}`);
 		console.log(error);
-
 		return false;
 	}
+}
+
+// Get image from URL
+async function getImage(url, id, subtitleDir) {
+	// Get buffer from URL
+	const imageBlob = await fetch(url).then((response) => response.blob());
+	imageBlob.arrayBuffer().then((array_buffer) => {
+		const buffer = Buffer.from(array_buffer);
+		const imagePath = path.join(subtitleDir, `image_${id}.jpg`);
+		// Save the blob to a file
+		fs.writeFileSync(imagePath, buffer);
+	});
+}
+
+async function getVideo(url, id, subtitleDir) {
+	const videoBlob = await fetch(url).then((response) => response.blob());
+	videoBlob.arrayBuffer().then((array_buffer) => {
+		const buffer = Buffer.from(array_buffer);
+		const videoPath = path.join(subtitleDir, `video_${id}.mp4`);
+		// Save the blob to a file
+		fs.writeFileSync(videoPath, buffer);
+	});
 }
 
 // Get images from Pexels
@@ -285,14 +224,7 @@ async function getStockImages(tags, count, orientation, size) {
 
 	// Perform search with the tags joined by a + sign
 	const response = await fetch(
-		"https://api.pexels.com/v1/search?query=" +
-			tagsQuery +
-			"&per_page=" +
-			count.toString() +
-			"&orientation=" +
-			orientation +
-			"&size=" +
-			size.toString(),
+		"https://api.pexels.com/v1/search?query=" + tagsQuery + "&per_page=" + count.toString() + "&orientation=" + orientation + "&size=" + size.toString(),
 		{
 			headers: {
 				Authorization: api_key,
@@ -327,14 +259,7 @@ async function getStockVideos(tags, count, orientation, size) {
 
 	// Perform search with the tags joined by a + sign
 	const response = await fetch(
-		"https://api.pexels.com/videos/search?query=" +
-			tagsQuery +
-			"&orientation=" +
-			orientation +
-			"&size=" +
-			size.toString() +
-			"&per_page=" +
-			count.toString(),
+		"https://api.pexels.com/videos/search?query=" + tagsQuery + "&orientation=" + orientation + "&size=" + size.toString() + "&per_page=" + count.toString(),
 		{
 			headers: {
 				Authorization: api_key,
@@ -355,24 +280,6 @@ async function getStockVideos(tags, count, orientation, size) {
 	}
 
 	return video_urls;
-}
-
-// Get image from URL
-async function getImage(url, id) {
-	const image = await fetch(url).then((response) => {
-		return response.blob();
-	});
-
-	return fileSaver.saveAs(new Blob([image], { type: "image/jpeg" }), "image_" + id + ".jpg");
-}
-
-// Get video from URL
-async function getVideo(url, id) {
-	const video = await fetch(url).then((response) => {
-		return response.blob();
-	});
-
-	return fileSaver.saveAs(new Blob([video], { type: "video/mp4" }), "video_" + id + ".mp4");
 }
 
 export async function AssetsGen(topic, user_id) {
