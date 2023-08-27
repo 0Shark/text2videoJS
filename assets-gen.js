@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import fileSaver from "file-saver";
 import fs from "fs";
 import path from "path";
 import { Configuration, OpenAIApi } from "openai";
@@ -117,6 +116,14 @@ async function getAudioTTS(user_id, assetsDir) {
 				synthesizer.speakTextAsync(subtitle.text, function (result) {
 					if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
 						audioFiles.push(audioFilePath);
+
+						// Update the script with the audio file path and duration
+						script.subtitles[i].audio_file_path = audioFilePath;
+						script.subtitles[i].audio_duration = result.audioDuration / 10000000;
+
+						// Save the updated script
+						fs.writeFileSync(script_path, JSON.stringify(script));
+
 						resolve(result);
 					} else {
 						console.log(`Audio synthesis canceled for subtitle ${i}: ${subtitle.text}`);
@@ -159,19 +166,25 @@ async function getImagesAndVideos(user_id, assetsDir) {
 				fs.mkdirSync(subtitleDir);
 			}
 
-			const imageTags = subtitle.search_tags;
-			const imageCount = 2;
-			const imageOrientation = "landscape";
-			const imageSize = "medium";
+			const imgScreenTime = 3;
+			const videoScreenTime = 5;
+			const duration = subtitle.audio_duration;
 
-			const images = await getStockImages(imageTags, imageCount, imageOrientation, imageSize);
+			const imageTags = subtitle.search_tags;
 
 			const videoTags = subtitle.search_tags;
-			const videoCount = 1;
+			const videoCount = Math.floor(duration / videoScreenTime);
 			const videoOrientation = "landscape";
 			const videoSize = "medium";
 
 			const videos = await getStockVideos(videoTags, videoCount, videoOrientation, videoSize);
+
+			// Fill the rest of the segment with images
+			const imageCount = Math.floor((duration - videoCount * videoScreenTime) / imgScreenTime);
+			const imageOrientation = "landscape";
+			const imageSize = "medium";
+
+			const images = await getStockImages(imageTags, imageCount, imageOrientation, imageSize);
 
 			for (let i = 0; i < images.length; i++) {
 				await getImage(images[i], i, subtitleDir);

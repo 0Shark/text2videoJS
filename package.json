@@ -6,12 +6,21 @@
 	"author": "Juled Zaganjori (0Shark)",
 	"license": "ISC",
 	"dependencies": {
+		"@remotion/cli": "^4.0.27",
+		"@remotion/eslint-plugin": "^4.0.27",
+		"@remotion/renderer": "^4.0.27",
 		"dotenv": "^16.0.3",
 		"express": "^4.17.3",
 		"file-saver": "^2.0.5",
+		"fluent-ffmpeg": "^2.1.2",
+		"gsap": "^3.12.2",
 		"mathjs": "^11.8.2",
 		"microsoft-cognitiveservices-speech-sdk": "^1.31.0",
 		"openai": "^3.2.1",
+		"react": "^18.0.0",
+		"react-dom": "^18.0.0",
+		"remotion": "^4.0.27",
+		"remotion-animated": "^2.0.0",
 		"socket.io": "^4.4.1"
 	},
 	"type": "module"
