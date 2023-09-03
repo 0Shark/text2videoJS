@@ -8,7 +8,7 @@
 	"dependencies": {
 		"@remotion/cli": "^4.0.27",
 		"@remotion/eslint-plugin": "^4.0.27",
-		"@remotion/renderer": "^4.0.27",
+		"@remotion/renderer": "^4.0.29",
 		"dotenv": "^16.0.3",
 		"express": "^4.17.3",
 		"file-saver": "^2.0.5",
@@ -23,5 +23,8 @@
 		"remotion-animated": "^2.0.0",
 		"socket.io": "^4.4.1"
 	},
-	"type": "module"
+	"type": "module",
+	"devDependencies": {
+		"@types/react": "^18.2.21"
+	}
 }

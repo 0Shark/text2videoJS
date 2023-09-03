@@ -1,5 +1,0 @@
-- Setup remotion 
-- Remotion folder will be copied to each video ID folder
-- Run remotion on each video ID folder that is ready for video rendering
-- Remotion will output a video file in the video ID folder
-
