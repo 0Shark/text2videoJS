@@ -68,6 +68,7 @@ export const Text2Video: React.FC<Props> = ({ topic, user_id, script }) => {
               }
             >
               <Asset
+			  	index={i}
                 asset_type="image"
                 src={script.subtitles[subtitle].images[0]}
                 text={script.subtitles[subtitle].text}
@@ -86,6 +87,7 @@ export const Text2Video: React.FC<Props> = ({ topic, user_id, script }) => {
 			  }
 			>
 			  <Asset
+			  	index={i}
 				asset_type="video"
 				src={script.subtitles[subtitle].videos[0]}
 				text={script.subtitles[subtitle].text}

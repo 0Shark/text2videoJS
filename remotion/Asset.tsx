@@ -4,6 +4,7 @@ import { config } from "./config";
 import "./Reveal.css";
 
 interface Props {
+  index: number;
   asset_type: string;
   src: string;
   text: string;
@@ -96,10 +97,10 @@ export const Asset: React.FC<Props> = (props) => {
 
       {props.asset_type == "video" ? (
         <video
-          key={i}
+          key={props.index}
           src={props.src}
           style={
-            i == 0
+            props.index == 0
               ? {
                   transform: `scale(${imagescale}) rotate(-${imagerotate}deg)`,
                 }
@@ -108,11 +109,11 @@ export const Asset: React.FC<Props> = (props) => {
         ></video>
       ) : (
         <img
-          key={i}
+          key={props.index}
           src={props.src}
           alt="..."
           style={
-            i == 0
+            props.index == 0
               ? {
                   transform: `scale(${imagescale}) rotate(-${imagerotate}deg)`,
                 }
