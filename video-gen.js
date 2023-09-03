@@ -13,9 +13,6 @@ const bundleLocation = await bundle({
 	webpackOverride: (config) => config,
 });
 
-// Get the composition you want to render. Pass inputProps if you want to customize the
-// duration or other metadata.
-
 export default async function VideoGen(topic, user_id) {
   const script = prepareAssets(user_id);
 
