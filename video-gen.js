@@ -47,7 +47,7 @@ export default async function VideoGen(topic, user_id) {
 }
 
 function prepareAssets(user_id) {
-	const assetsDir = path.resolve(`./videos/${user_id}`);
+	const assetsDir = path.resolve(`./public/videos/${user_id}`);
 
 	if (!fs.existsSync(assetsDir)) {
 		console.log("Assets directory doesn't exist for user " + user_id);
@@ -78,7 +78,3 @@ function prepareAssets(user_id) {
 
 	return script;
 }
-
-
-// Test 
-VideoGen("Test topic", "3FZCukYJJptsb_CZAAAB");

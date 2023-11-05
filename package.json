@@ -21,7 +21,8 @@
 		"react-dom": "^18.0.0",
 		"remotion": "^4.0.27",
 		"remotion-animated": "^2.0.0",
-		"socket.io": "^4.4.1"
+		"socket.io": "^4.4.1",
+		"winston": "^3.11.0"
 	},
 	"type": "module",
 	"devDependencies": {

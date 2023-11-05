@@ -12,8 +12,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const __dirname = path.resolve();
-console.log(__dirname);
+const __dirname = path.resolve() + "/public";
 
 // Prepare directory for assets inside videos folder add a folder with the user_id
 function prepareAssetsDir(user_id) {
@@ -295,29 +294,17 @@ async function getStockVideos(tags, count, orientation, size) {
 	return video_urls;
 }
 
-export async function AssetsGen(topic, user_id) {
+export default async function AssetsGen(topic, user_id) {
 	try {
 		const assetsDir = prepareAssetsDir(user_id);
-		if (!assetsDir) {
-			return false;
-		}
 
-		const status = await getVideoScript(topic, user_id, assetsDir)
-			.then(() => {
-				console.log("Generating audio for user " + user_id);
-				const audioStatus = getAudioTTS(user_id, assetsDir).then((status) => {
-					console.log("Generating images and videos for user " + user_id);
-					const imagesAndVideosStatus = getImagesAndVideos(user_id, assetsDir).then((status) => {
-						return "status complete";
-					});
-				});
-			})
-			.catch((error) => {
-				console.log("[ERROR] Couldn't generate assets for user " + user_id);
-				console.log(error);
+		await getVideoScript(topic, user_id, assetsDir);
 
-				return false;
-			});
+		await getAudioTTS(user_id, assetsDir);
+
+		await getImagesAndVideos(user_id, assetsDir);
+
+		return true;
 	} catch (error) {
 		console.log("[ERROR] An error occurred during asset generation:");
 		console.log(error);
