@@ -137,7 +137,7 @@ export const Asset: React.FC<Props> = (props) => {
                 opacity: opacity + "%",
               }}
             >
-              {props.text.match(/.{1,30}\w/g)[0]}
+              {props.text.match(/.{1,140}\w/g)[0] + "..."}
             </h1>
           </div>
         </div>

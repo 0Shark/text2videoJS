@@ -61,14 +61,16 @@ function prepareAssets(user_id) {
     subtitle.images = [];
     subtitle.videos = [];
     
-    const subtitleDir = assetsDir + "/assets/subtitle_" + index;
+    // const subtitleDir = assetsDir + "/assets/subtitle_" + index;
+    const subtitleDir = path.resolve(`./public/videos/${user_id}/assets/subtitle_${index}`);
     const subtitleAssets = fs.readdirSync(subtitleDir);
 
     subtitleAssets.forEach((asset) => {
       if (asset.startsWith("image")) {
-        subtitle.images.push(subtitleDir + "/" + asset);
+        // subtitle.images.push(subtitleDir + "/" + asset);
+        subtitle.images.push(path.resolve(`./public/videos/${user_id}/assets/subtitle_${index}/${asset}`));
       } else if (asset.startsWith("video")) {
-        subtitle.videos.push(subtitleDir + "/" + asset);
+        subtitle.videos.push(path.resolve(`./public/videos/${user_id}/assets/subtitle_${index}/${asset}`));
       }
     });
   });
@@ -78,3 +80,6 @@ function prepareAssets(user_id) {
 
 	return script;
 }
+
+// Test
+VideoGen("Why drinking coffee is good for your health", "test");

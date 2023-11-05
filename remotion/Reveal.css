@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Lato:300,400|Poppins:300,400,800&display=swap');
+@import url("https://fonts.googleapis.com/css?family=Lato:300,400|Poppins:300,400,800&display=swap");
 
 * {
 	margin: 0;
@@ -37,6 +37,7 @@ html {
 	display: flex;
 	/* align-items: center; */
 	height: 150px;
+	max-width: 90vw;
 }
 .container .box .title .block {
 	width: 0%;
@@ -49,18 +50,15 @@ html {
 }
 
 .container .box .title h1 {
-	font-family: 'Poppins';
-	background: black;
-	padding: 10px 50px 0;
+	font-family: "Poppins";
+	background: #0385f4;
+	padding: 0 50px;
 	color: #fff;
-	font-size: 80px;
-	/* -webkit-animation: mainFadeIn 2s forwards;
-	-o-animation: mainFadeIn 2s forwards;
-	animation: mainFadeIn 2s forwards; */
+	font-size: 40px;
 	/* animation-delay: 2.6s; */
 	opacity: 0;
 	display: flex;
-	align-items: baseline;
+	align-items: center;
 	position: relative;
 }
 
@@ -106,21 +104,21 @@ img {
 }
 
 video {
-    /* animation: icon 2s forwards; */
-    background-color: white;
-    height: 100%;
-    width: auto;
-    /* height: auto;
+	/* animation: icon 2s forwards; */
+	background-color: white;
+	height: 100%;
+	width: auto;
+	/* height: auto;
     width: 100%; */
-    display: flex;
-    /* align-items: center;
+	display: flex;
+	/* align-items: center;
     justify-content: space-around;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0; */
-    margin: 0 auto;
-    /* object-fit: contain;
+	margin: 0 auto;
+	/* object-fit: contain;
     object-position: 50% 50%;
     z-index: 5;
     position: absolute; */
